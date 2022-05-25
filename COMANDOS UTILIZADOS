@@ -1,0 +1,107 @@
+-----GIT
+-sudo apt-get install git
+
+-----ROS INDIGO
+-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+-sudo apt install curl 
+-curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+-sudo apt-get update && sudo apt-get install dpkg
+-sudo apt-get install ros-indigo-desktop-full
+-sudo rosdep init
+-rosdep update
+-echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc
+-source ~/.bashrc
+-sudo apt-get install python-rosinstall
+
+-----CATKIN 
+-git clone https://github.com/ros/catkin.git
+-sudo apt-get install ros-indigo-catkin
+-sudo apt-get install ros-kinetic-catkin python-catkin-tools 
+-https://stackoverflow.com/questions/41234957/catkin-command-not-found
+-sudo apt-get install cmake-curses-gui
+
+-----WORKSPACE
+-mkdir -p ~/catkin_ws/src
+-cd ~/catkin_ws/
+-catkin_make
+-source devel/setup.bash
+-echo $ROS_PACKAGE_PATH
+
+-----RVIZ
+-sudo apt-get install ros-indigo-rviz
+-source /opt/ros/indigo/setup.bash
+-roscore &
+-rosrun rviz rviz
+-rviz
+
+-----MOVEIT
+-sudo apt install ros-indigo-moveit
+-cd ~/catkin_ws/
+-source devel/setup.bash
+-roslaunch moveit_setup_assistant setup_assistant.launch
+-sudo apt-get install ros-indigo-moveit-kinematics
+
+
+
+-----CARGAR ROBOT EN RVIZ
+-cd ~/catkin_ws/
+-source devel/setup.bash
+-roslaunch motoman_gp25_config demo.launch 
+-rosrun motoman_gp25_config gp25_prueba.py
+-rosrun motoman_gp25_config gp25_prueba_l.py
+-rostopic echo /joint_states 
+-rostopic info /joint_states 
+
+------HACER ARCHIVO PYTHON EJECUTABLE
+-cd ~/catkin_ws/src/motoman/motoman_gp25_config/
+-chmod +x scripts/"NOMBRE ARCHIVO".py
+-rosrun "NOMBRE ROBOT"  "NOMBRE ARCHIVO".py
+
+------PASAR ARCHIVO .XACRO A .URDF
+-rosrun xacro xacro gp25_macro.xacro --inorder > gp25.urdf
+
+------MOTOMAN
+-git clone https://github.com/ros-industrial/motoman.git
+-sudo apt-get install ros-indigo-motoman
+
+------CMAKE
+sudo apt-get install cmake3
+
+------TOPICS
+rostopic list Muestra la lista de topics activos
+rostopic echo [nombre del topic] 	Muestra los mensajes publicados en el topic
+rostopic find [tipo de mensaje] 	Busca topics por tipo de mensaje
+rostopic type [nombre del topic] 	Muestra el tipo de mensaje de un topic
+rostopic info [nombre del topic] 	Muestra información de los topics activos
+rostopic pub [nombre del topic] [tipo de mensaje] [datos] 	Publica datos en el topic
+rosmsg show sensor_msgs/JointState
+
+------NODES
+rosnode list
+rosnode info
+rosnode kill
+
+------LIMPIAR CACHE
+-sudo su
+-sync && echo 3 > /proc/sys/vm/drop_caches
+-sudo apt-get clean
+-sudo apt-get autoremove
+
+- CTRL + H 
+- .cache
+-borrar
+
+------GAZEBO
+-sudo apt-get install ros-indigo-gazebo7-ros-pkgs
+-catkin_create_pkg my_robot_urdf rospy
+-roslaunch gazebo_ros empty_world.launch
+-rosservice call /gazebo/get_world_properties
+-roslaunch motoman_gp25_support spawn_urdf.launch 
+
+------CHROME
+-wget -c https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+-sudo apt-get update
+-sudo dpkg -i google-chrome-stable_current_amd64.deb
+
+
+
