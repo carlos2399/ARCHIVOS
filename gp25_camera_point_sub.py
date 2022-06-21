@@ -16,49 +16,46 @@ def callback(data):
 	rospy.loginfo("POSITION: %s",data.pose.position)
 	rospy.loginfo("ORIENTATION: %s",data.pose.orientation)
 
-	x = 1
-    	y = 0.5
-    	z = 1
+
+	x = 0
+	y = 2
+	z = 0
+
+	# LIMITES DE MOVIMIENTO
+	q_1_min = 1.3029271364212036
+	q_1_max = 2.1799113750457764
+
+	data.pose.position.x 
+	data.pose.position.y 
+	data.pose.position.z 
+
+	# CALCULO DE MATRICES
+	A=np.array([[-1,0,0,x],[0,-1,0,y],[0,0,1,z],[0,0,0,1]])
+	C=np.array([[1,0,0,0],[0,0,1,0],[0,-1,0,0],[0,0,0,1]])
+	AC = np.dot(A,C)
+	B=np.array([[data.pose.position.x],[data.pose.position.y],[data.pose.position.z],[1]])
+	m_1 = np.dot(AC,B)
+	print("Punto inicial del robot imaginario= ", m_1)
+
+	# CALCULO DE VARIACION DE A DISTANCIA DE LA CAMARA
+	#m_1[0] = (102.8637805883*m_1[0]+38.9345353973)*0.01
+	#m_1[1] = (-103.9789227986*m_1[1]+38.4841950323)*0.01
+	#m_1[2] = (297.8461147631*m_1[2]+1.04685057)*0.01
+	#print("Punto inicial del robot real= ", m_1)
+
+
+	# CALCULO Q1
+	if m_1[0] == 0:
+
+		q_1  = pi/2
+
+	else:
+
+		aux_q1 = np.arctan(m_1[1]/m_1[0])
+		q_1=aux_q1[0]	
+
+	print("Punto q_1= ",q_1)
 	
-	dato_1 = data.pose.position.x
-	dato_2 = data.pose.position.y
-	dato_3 = data.pose.position.z
-
-    	A=np.array([[1,0,0,x],[0,1,0,y],[0,0,1,z],[0,0,0,1]]) 
-    	B=np.array([[dato_1],[dato_2],[dato_3],[1]])
-	m_1 = np.dot(A,B)    	
-	
-	print("Punto inicial del robot= ", m_1)
-
-	#CALCULO Q1
-    	if m_1[0] == 0:
-
-		q_1 = pi/2
-    	else:
-
-        	q_1 = np.arctan(m_1[1]/m_1[0])
-        	print("Punto q_1= ",q_1[0])
-
-	#CALCULO Q3
-	l_1 = 0.505
-	l_2 = 0.76
-	l_3 = 0.795
-	
-	cos_q_3 = (pow(m_1[0],2)+pow(m_1[1],2)+pow(m_1[2],2)-pow(l_2,2)-pow(l_3,2))/(2*l_2*l_3)
-	print(cos_q_3)
-	sqrt_3 = np.sqrt(1-pow(cos_q_3,2))
-	print(sqrt_3)
-	q_3 = np.arctan(-sqrt_3/cos_q_3)
-	print('Punto q_3= ',q_3[0])
-	print(np.isnan(q_3[0]))
-
-	#CALCULO Q2
-	sqrt_2 = np.sqrt(pow(m_1[0],2)+pow(m_1[1],2))
-
-	q_2 = np.arctan(m_1[2]/-sqrt_2)-np.arctan((l_3*np.sin(q_3))/(l_2+l_3*cos_q_3))
-	
-	print('Punto q_2= ',q_2[0])
-
 def listener():
 
 	rospy.init_node('joint_states_listener')

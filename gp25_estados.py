@@ -28,9 +28,9 @@ def callback(data):
 
 		print("+++++++POSICION LEIDA, ESPERANDO MOVIMIENTO")
 		print(data.data)
-		os.system ("/home/carlos/catkin_ws/src/motoman/motoman_gp25_config_2/scripts/gp25.py")
+		os.system ("/home/carlos/catkin_ws/src/motoman/motoman_gp25_config_2/scripts/gp25_d.py")
 		#sys.exit("POSICION ALCANZADA") 
-		os._exit(os.EX_OK) 
+		#os._exit(os.EX_OK) 
 
 	elif data.data == 4:
 
@@ -41,13 +41,16 @@ def listener():
 
 	rospy.init_node('joint_states_listener')
 
-	status_subscriber=rospy.Subscriber('//visp_auto_tracker/status', Int8, callback)
+	status_subscriber=rospy.Subscriber('/visp_auto_tracker/status', Int8, callback)
 
 	rospy.spin()
 
 
+def main():
+	listener()
+
 if __name__ == '__main__':
 
-		listener()
+		main()
 	#except rospy.ROSInterruptException:
 	#	pass

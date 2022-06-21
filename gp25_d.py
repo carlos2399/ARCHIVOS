@@ -1,79 +1,162 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+from six.moves import input
+
+import rospy
+import numpy as np
+
 import sys
+import os
 import copy
 import rospy
+import time
 import moveit_commander
 import moveit_msgs.msg
 import geometry_msgs.msg
 
-from std_msgs.msg import String
+try:
+    from math import pi, tau, dist, fabs, cos
+except: 
+    from math import pi, fabs, cos, sqrt
 
-def gp25_python_interface():
+from std_msgs.msg import String,Float64MultiArray
+from moveit_commander.conversions import pose_to_list
+from geometry_msgs.msg import PoseStamped
 
-  moveit_commander.roscpp_initialize(sys.argv)
-  rospy.init_node('gp25_python_interface', anonymous=True)
+class MoveGroupPythonInterfaceTutorial(object):
+    """MoveGroupPythonInterfaceTutorial"""
 
-  robot = moveit_commander.RobotCommander()
+    def __init__(self):
+        super(MoveGroupPythonInterfaceTutorial, self).__init__()
 
-  scene = moveit_commander.PlanningSceneInterface()
+        moveit_commander.roscpp_initialize(sys.argv)
+        rospy.init_node("move_group_python_interface_tutorial", anonymous=True)
 
-  brazo = moveit_commander.MoveGroupCommander("Motoman")
+        robot = moveit_commander.RobotCommander()
 
-  display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path', moveit_msgs.msg.DisplayTrajectory, queue_size=20)
+        scene = moveit_commander.PlanningSceneInterface()
 
-  print "============ Esperando a que RVIZ se abra ..."
-  rospy.sleep(1)
+        group_name = "Motoman"
+        move_group = moveit_commander.MoveGroupCommander(group_name)
 
-  print "============ Reference frame: %s" % brazo.get_planning_frame()
+        display_trajectory_publisher = rospy.Publisher("/move_group/display_planned_path", moveit_msgs.msg.DisplayTrajectory, queue_size=20,)
 
-  print "============ Reference frame: %s" % brazo.get_end_effector_link()
-  
-  print "============ Robot Groups:"
-  print robot.get_group_names()
+        planning_frame = move_group.get_planning_frame()
+        print("============ Planning frame: %s" % planning_frame)
 
-  print "============ Printing robot state"
-  print robot.get_current_state()
-  print "============"
+        eef_link = move_group.get_end_effector_link()
+        print("============ End effector link: %s" % eef_link)
 
+        group_names = robot.get_group_names()
+        print("============ Grupos Robot disponibles:", robot.get_group_names())
 
-  ## PLANNING TO A POSE GOAL
-  ## ^^^^^^^^^^^^^^^^^^^^^^^
-  ## We can plan a motion for this group to a desired pose for the end-effector
-  
-  print "============ Generating plan 1"
-  pose_target = geometry_msgs.msg.Pose()
-  pose_target.orientation.w = 0.6878
-  pose_target.position.x = 0.752
-  pose_target.position.y = -0.895
-  pose_target.position.z = 0.354
-  brazo.set_pose_target(pose_target)
+        print("============ Imprimiendo el estado del robot")
+        print(robot.get_current_state())
+        print("")
+
+        self.robot = robot
+        self.scene = scene
+        self.move_group = move_group
+        self.display_trajectory_publisher = display_trajectory_publisher
+        self.planning_frame = planning_frame
+        self.eef_link = eef_link
+        self.group_names = group_names 
+
+def callback(data):
 	
-  ## Now, we call the planner to compute the plan and visualize it if successful
-  plan1 = brazo.plan()
+       	rospy.loginfo("POSITION: %s",data.pose.position)
+      	rospy.loginfo("ORIENTATION: %s",data.pose.orientation)
 
-  print "============ Waiting while RVIZ displays plan1"
-  rospy.sleep(2)
+	#q_objetivo = 0	
 
-  print "============ Visualizing plan1"
-  display_trajectory = moveit_msgs.msg.DisplayTrajectory()
+        x = 0
+    	y = 0
+    	z = 0
 
-  display_trajectory.trajectory_start = robot.get_current_state()
-  display_trajectory.trajectory.append(plan1)
-  display_trajectory_publisher.publish(display_trajectory);
+	q_1_min = 1.3029271364212036
+	q_1_max = 2.1799113750457764
+	
+    	A=np.array([[1,0,0,x],[0,1,0,y],[0,0,1,z],[0,0,0,1]]) 
+    	B=np.array([[data.pose.position.x],[data.pose.position.y],[data.pose.position.z],[1]])
+    	m_1 = np.dot(A,B)  	
+	print("Punto inicial del robot imaginario= ", m_1)
+	
+	#m_1[0] = (102.8637805883*m_1[0]+38.9345353973)*0.01
+	#m_1[1] = (-103.9789227986*m_1[1]+38.4841950323)*0.01
+	#m_1[2] = (297.8461147631*m_1[2]+1.04685057)*0.01
 
-  print "============ Waiting while plan1 for left arm is visualized again"
-  rospy.sleep(2)
+	print("Punto inicial del robot real= ", m_1)
+	
+	#CALCULO Q1
+    	if m_1[0] == 0:
 
-if __name__=='__main__':
-  try:
-    gp25_python_interface()
-  except rospy.ROSInterruptException:
-    pass
+		q_1 = pi/2
+    	else:
 
+        	aux_q1 = np.arctan(m_1[1]/m_1[0])
 
+		q_1=aux_q1[0]					
+			
+		if m_1[0] < 0:
+			q_1 = pi - q_1
 
+	# SI EL VALOR DE Q1 ES MENOR QUE EL MINIMO, IR AL MINIMO
+	if  q_1 < q_1_min:
+		q_1 = q_1_min
+		
+	# SI EL VALOR DE Q1 ES MAYOR QUE EL MAXIMO, IR AL MAXIMO
+	elif  q_1 > q_1_max:
+		q_1 = q_1_max
 
+	print("Punto q_1= ",q_1)
+	print("Punto q_1= ",q_1*180/pi)	
+	
+	move_group = robot_state.move_group
+	       
+	joint_goal = move_group.get_current_joint_values()
+	joint_goal[0] = q_1
+	#joint_goal[1] = q_2[0]
+	#joint_goal[2] = q_3[0]
+
+	#print("La posicion objetivo es: ",joint_goal)
+	
+	move_group.go(joint_goal, wait=True)
+	      
+	move_group.stop()
+	
+	#q_objetivo = q_1
+
+	#if q_objetivo == q_1:
+		#os.system ("/home/carlos/catkin_ws/src/motoman/motoman_gp25_config_2/scripts/gp25_estados.py")
+		#os._exit(os.EX_OK) 
+
+def listener():
+
+        #rospy.init_node('joint_states_listener')
+	print("PULSE ENTER PARA COGER INFORMACION")
+
+	control_subscriber=rospy.Subscriber('/visp_auto_tracker/object_position', PoseStamped, callback)
+
+	rospy.spin()
+
+robot_state = MoveGroupPythonInterfaceTutorial()
+
+def main():
+	print("")
+	print("----------------------------------------------------------")
+	print("============ Bienvenido a la interfaz de control del Robot Motoman Gp25")
+	print("----------------------------------------------------------")
+	print("")
+
+	#while not rospy.is_shutdown():
+
+	#input("")		
+	listener()
+	#print("============ Pulsa ENTER para realizar el movimiento")
+
+if __name__ == "__main__":
+    main()
 
 
 

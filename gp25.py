@@ -72,17 +72,17 @@ def callback(data):
     	y = 0
     	z = 0
 
-	q_1_min = 1.3029271364212036
-	q_1_max = 2.1799113750457764
+	q_1_min = -pi #1.3029271364212036
+	q_1_max = pi #2.1799113750457764
 	
     	A=np.array([[1,0,0,x],[0,1,0,y],[0,0,1,z],[0,0,0,1]]) 
     	B=np.array([[data.pose.position.x],[data.pose.position.y],[data.pose.position.z],[1]])
     	m_1 = np.dot(A,B)  	
 	print("Punto inicial del robot imaginario= ", m_1)
 	
-	m_1[0] = 297.8461147631*m_1[0]+1.04685057
-	m_1[1] = 297.8461147631*m_1[1]+1.04685057
-	m_1[2] = 297.8461147631*m_1[2]+1.04685057
+	#m_1[0] = (102.8637805883*m_1[0]+38.9345353973)*0.01
+	#m_1[1] = (-103.9789227986*m_1[1]+38.4841950323)*0.01
+	#m_1[2] = (297.8461147631*m_1[2]+1.04685057)*0.01
 
 	print("Punto inicial del robot real= ", m_1)
 	
@@ -96,9 +96,9 @@ def callback(data):
         	print("Punto q_1= ",q_1[0])
 
 	#CALCULO Q3
-	l_1 = 50.5
-	l_2 = 76
-	l_3 = 79.5
+	l_1 = 505
+	l_2 = 760
+	l_3 = 795
 	
 	cos_q_3 = (pow(m_1[0],2)+pow(m_1[1],2)+pow(m_1[2],2)-pow(l_2,2)-pow(l_3,2))/(2*l_2*l_3)
 
@@ -132,7 +132,7 @@ def callback(data):
 		sys.exit("POSICION ALCANZADA") 	
 
 	else:
-		printprint("NO ESTA DENTRO DE LOS LIMITES - ERROR")
+		print("NO ESTA DENTRO DE LOS LIMITES - ERROR")
 		sys.exit("FUERA DE LOS LIMITES") 
 
 def listener():

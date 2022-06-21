@@ -21,7 +21,7 @@
 
 ---5---
  - VOLVEMOS A LA MISMA PESTAÑA
- - rosparam load /home/ros/catkin_ws/src/motoman/motoman_gp25_support/urdf/gp25.urdf robot_description
+ - rosparam load /home/carlos/catkin_ws/src/motoman/motoman_gp25_support/urdf/gp25.urdf robot_description
 
 ---6---
  - rosparam set controller_joint_names "[joint_1_s, joint_2_l, joint_3_u, joint_4_r, joint_5_b, joint_6_t]"
@@ -33,9 +33,9 @@
  - rosservice call /robot_enable
 
 ---9---
- - rosrun motoman_driver move_to_joint.py "[1.851489543914795, 0.1814519315958023, -0.44645413756370544, -0.23572798073291779, 0.8488105535507202, 3.4821078777313232]"
+rosrun motoman_gp25_config_2 move_to_joint.py "[1.3029271364212036, 0.9076073169708252, 0.08343759924173355, -0.08227870613336563, -0.6823441386222839, 3.2574872970581055]"
 
- - rosrun motoman_driver move_to_joint.py "[1.8940110206604004, -0.5322883129119873, -0.4464322328567505, -0.23572798073291779, 0.8488105535507202, 3.4821078777313232]"
+rosrun motoman_gp25_config_2 move_to_joint.py "[2.1799113750457764, 0.9076073169708252, 0.08347046375274658, -0.08227870613336563, -0.6823795437812805, 3.2575197219848633]"
 
 
 ---OTROS COMANDOS UTILES---

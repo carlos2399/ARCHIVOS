@@ -53,7 +53,7 @@
 -rostopic info /joint_states 
 
 ------HACER ARCHIVO PYTHON EJECUTABLE
--cd ~/catkin_ws/src/motoman/motoman_gp25_config/
+-cd ~/catkin_ws/src/motoman/motoman_gp25_config_2/
 -chmod +x scripts/"NOMBRE ARCHIVO".py
 -rosrun "NOMBRE ROBOT"  "NOMBRE ARCHIVO".py
 

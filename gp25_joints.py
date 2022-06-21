@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# Python 2/3 compatibility imports
 from __future__ import print_function
 from six.moves import input
 
@@ -12,7 +13,7 @@ import geometry_msgs.msg
 
 try:
     from math import pi, tau, dist, fabs, cos
-except: 
+except:  # For Python 2 compatibility
     from math import pi, fabs, cos, sqrt
 
 from std_msgs.msg import String
@@ -24,35 +25,45 @@ class MoveGroupPythonInterfaceTutorial(object):
     def __init__(self):
         super(MoveGroupPythonInterfaceTutorial, self).__init__()
 
-        ## Primero iniciamos el nodo
+        ## First initialize `moveit_commander`_ and a `rospy`_ node:
         moveit_commander.roscpp_initialize(sys.argv)
         rospy.init_node("move_group_python_interface_tutorial", anonymous=True)
 
+        ## Instantiate a `RobotCommander`_ object. Provides information such as the robot's kinematic model and the robot's current joint states
         robot = moveit_commander.RobotCommander()
 
+        ## Instantiate a `PlanningSceneInterface`_ object.  This provides a remote interface for getting, setting, and updating the robot's internal understanding of the surrounding world:
         scene = moveit_commander.PlanningSceneInterface()
 
-        ## Llamamos al grupo creado en el asistentente de MoveIt
+        ## This interface can be used to plan and execute motions:
         group_name = "Motoman"
         move_group = moveit_commander.MoveGroupCommander(group_name)
 
-        ## Creamos el publicador para nuestras trayectorias
-        display_trajectory_publisher = rospy.Publisher("/move_group/display_planned_path", moveit_msgs.msg.DisplayTrajectory, queue_size=20,)
+        ## Create a `DisplayTrajectory`_ ROS publisher which is used to display trajectories in Rviz:
+        display_trajectory_publisher = rospy.Publisher(
+            "/move_group/display_planned_path",
+            moveit_msgs.msg.DisplayTrajectory,
+            queue_size=20,
+        )
 
+        # We can get the name of the reference frame for this robot:
         planning_frame = move_group.get_planning_frame()
         print("============ Planning frame: %s" % planning_frame)
 
+        # We can also print the name of the end-effector link for this group:
         eef_link = move_group.get_end_effector_link()
         print("============ End effector link: %s" % eef_link)
 
+        # We can get a list of all the groups in the robot:
         group_names = robot.get_group_names()
-        print("============ Grupos Robot disponibles:", robot.get_group_names())
+        print("============ Available Planning Groups:", robot.get_group_names())
 
-        print("============ Imprimiendo el estado del robot")
+        # Sometimes for debugging it is useful to print the entire state of the robot:
+        print("============ Printing robot state")
         print(robot.get_current_state())
         print("")
 
-        # Establecemos las variables locales
+        # Misc variables
         self.robot = robot
         self.scene = scene
         self.move_group = move_group
@@ -61,50 +72,35 @@ class MoveGroupPythonInterfaceTutorial(object):
         self.eef_link = eef_link
         self.group_names = group_names
 
-# Movimiento 1
     def go_to_joint_state(self):
-        # Convertimos las variables en variables locales
+        # Copy class variables to local variables to make the web tutorials more clear.
         move_group = self.move_group
 
-        # Cogemos los valores de las articulaciones y establecemos los valores deseados
+        # We get the joint values from the group and change some of the values:
         joint_goal = move_group.get_current_joint_values()
         joint_goal[0] = pi / 2
         joint_goal[1] = 0
         joint_goal[2] = 0
         joint_goal[3] = pi / 2
-        joint_goal[4] = -pi / 6
+        joint_goal[4] = 0
         joint_goal[5] = pi / 3 
-	
-	print("La posicion objetivo es: ",joint_goal)
-	
-	# Con el siguiente comando mandamos al robot ir a la posicion indicada
+        
+
+        # The go command can be called with joint values, poses, or without any parameters if you have already set the pose or joint target for the group
         move_group.go(joint_goal, wait=True)
 
-        # Llamando a stop() nos aseguramos de que no queden movimientos residuales
+        # Calling ``stop()`` ensures that there is no residual movement
         move_group.stop()
 
-# Movimiento 2
+        # For testing:
+        #current_joints = move_group.get_current_joint_values()
+        #return all_close(joint_goal, current_joints, 0.01)
+
     def go_to_joint_state_2(self):
+        # Copy class variables to local variables to make the web tutorials more clear.
         move_group = self.move_group
 
-        joint_goal = move_group.get_current_joint_values()
-        joint_goal[0] = pi
-        joint_goal[1] = pi/3
-        joint_goal[2] = pi / 4
-        joint_goal[3] = -pi
-        joint_goal[4] = pi / 2
-        joint_goal[5] = -pi / 6
-
-	print("La posicion objetivo es: ",joint_goal)
-
-        move_group.go(joint_goal, wait=True)
-       
-        move_group.stop()
-
-# Movimiento 3
-    def go_to_joint_state_3(self):
-        move_group = self.move_group
-
+        # We get the joint values from the group and change some of the values:
         joint_goal = move_group.get_current_joint_values()
         joint_goal[0] = 0
         joint_goal[1] = 0
@@ -112,42 +108,47 @@ class MoveGroupPythonInterfaceTutorial(object):
         joint_goal[3] = 0
         joint_goal[4] = 0
         joint_goal[5] = 0 
+        
 
-	print("La posicion objetivo es: ",joint_goal)
-
+        # The go command can be called with joint values, poses, or without any parameters if you have already set the pose or joint target for the group
         move_group.go(joint_goal, wait=True)
-       
+
+        # Calling ``stop()`` ensures that there is no residual movement
         move_group.stop()
 
+        # For testing:
+        #current_joints = move_group.get_current_joint_values()
+        #return all_close(joint_goal, current_joints, 0.01)
+
 def main():
+    #try:
 	print("")
 	print("----------------------------------------------------------")
-	print("============ Bienvenido a la interfaz de control del Robot Motoman Gp25")
+	print("Welcome to the GP25 MoveIt Python Interface")
 	print("----------------------------------------------------------")
+	print("Press Ctrl-D to exit at any time")
 	print("")
-	input("============ Pulsa ENTER para establecer el estado del robot")
-	robot_state = MoveGroupPythonInterfaceTutorial()
-	print("============ Pulsa ENTER para realizar el movimiento")
-
+	input(
+	    "============ Press `Enter` to set the robot state"
+	)
+	tutorial = MoveGroupPythonInterfaceTutorial()
 	while not rospy.is_shutdown():
+		input(
+		    "============ Press `Enter` to execute the first movement using a joint state goal"
+		)
+		tutorial.go_to_joint_state()
 
-		input("")
-		robot_state.go_to_joint_state()
-		print("")
+		input(
+		    "============ Press `Enter` to return the robot to the initial state using a joint state goal"
+		)
+		tutorial.go_to_joint_state_2()
 
-		input("============  Movimiento completado, pulsa ENTER para el siguiente movimiento o CTRL+D para salir del programa")
-		print("")
-		robot_state.go_to_joint_state_2()
-
-		print("")
-		print("============ Movimiento completado, pulsa ENTER para el siguiente movimiento o CTRL+D para salir del programa")
-
-		input("")
-		robot_state.go_to_joint_state_3()
-
-		print("")
-		print("============ Movimiento completado, pulsa ENTER repetir los movimientos o CTRL+D para salir del programa")
-		print("")
+		print("============ Movement complete")
+		print("============ Press enter to repeat te same movement or Ctrl-D for exit")
+    #except rospy.ROSInterruptException:
+     #   return
+    #except KeyboardInterrupt:
+     #   return
 
 
 if __name__ == "__main__":
